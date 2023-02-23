@@ -1,0 +1,8 @@
+POST   http://localhost:8080/prices
+Content-Type: application/json
+
+acala,cardano,altair,altura,astar,avalanche-2,centrifuge,coti,curve-dao-token,polkadot,efinity,ethereum,fantom,moonbeam,kilt-protocol,kintsugi,calamari-network,kusama,decentraland,moonriver,harmony,parallel-finance,the-sandbox,shiden,bitcoin,pha,interlay,litentry,nodle-network,origintrail,unique-network,polkadex,bifrost-native-coin
+
+###
+GET http://localhost:8080/tokens
+Content-Type: application/json
