@@ -1,4 +1,4 @@
-POST   http://192.168.1.162:8080/prices
+POST   http://127.0.0.1:8080/prices
 Content-Type: application/json
 
 acala,cardano,altair,altura,astar,avalanche-2,centrifuge,coti,curve-dao-token,polkadot,efinity,ethereum,fantom,moonbeam,kilt-protocol,kintsugi,calamari-network,kusama,decentraland,moonriver,harmony,parallel-finance,the-sandbox,shiden,bitcoin,pha,interlay,litentry,nodle-network,origintrail,unique-network,polkadex,bifrost-native-coin
