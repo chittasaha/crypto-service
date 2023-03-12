@@ -1,0 +1,10 @@
+version: '3.4'
+
+services:
+  crypro-service:  
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: crypto-service-web
+    ports:
+      - "8080:8080"

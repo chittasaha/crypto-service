@@ -14,63 +14,55 @@ pub mod models;
 #[post("/prices")]
 async fn get_price(ids: String) -> impl Responder {
     
-    let vec_currency = ids.split(",").collect::<Vec<&str>>() ;
-    
-    //let vec_currency = vec!["acala","cardano","altair","altura","astar","avalanche-2","centrifuge","coti","curve-dao-token","polkadot","efinity","ethereum","fantom","moonbeam","kilt-protocol","kintsugi","calamari-network","kusama","decentraland","moonriver","harmony","parallel-finance","the-sandbox","shiden", "bitcoin","pha","interlay","litentry", "nodle-network", "origintrail","unique-network","polkadex","bifrost-native-coin"];
+    let vec_currency = ids.split(",").collect::<Vec<&str>>();    
         
-        //let currencies = vec_currency.iter().map(|x| x.to_string() + ",").collect::<String>();
+    let client = CoinGeckoClient::default();            
+
+    let prices= match client.price( &vec_currency,
+            &vec!["eur"],true, true,
+            true, false).await
+    {
+        Ok(p) => p,
+        Err(_error) => panic!(""),
+    };
+
+    let mut response_price: Vec<Currency> = Vec::new();
+
+    for cur in vec_currency
+    {
+        let base_cur = String::from("eur");
+        let mut price:f64= 0.0;
+        let mut change_24:f64 = 0.0;
+        let mut market_capital:f64 = 0.0; 
+        let name = String::from(cur);
+        if prices.contains_key(cur)
+        {            
+            price = match prices[cur].eur {                    
+                Some(v) => v,
+                None => 0.0,
+            };
+            change_24 = match prices[cur].eur24_h_change {
+                Some(v) => v,
+                None => 0.0,
+            };
+            market_capital = match prices[cur].eur_market_cap {
+                Some(v) => v,
+                None => 0.0,
+            };            
+        }
         
-        let client = CoinGeckoClient::default();            
 
-        let prices= match client.price( &vec_currency,
-             &vec!["eur"],true, true,
-              true, false).await
+        response_price.push(Currency
         {
-            Ok(p) => p,
-            Err(_error) => panic!(""),
-        };
-
-        let mut response_price: Vec<Currency> = Vec::new();
-
-        for cur in vec_currency
-        {
-            let base_cur = String::from("eur");
-            let mut price:f64= 0.0;
-            let mut change_24:f64 = 0.0;
-            let mut market_capital:f64 = 0.0; 
-            let name = String::from(cur);
-            if prices.contains_key(cur)
-            {
-                //println!("{0}",cur);
-                price = match prices[cur].eur {                    
-                    Some(v) => v,
-                    None => 0.0,
-                };
-                change_24 = match prices[cur].eur24_h_change {
-                    Some(v) => v,
-                    None => 0.0,
-                };
-                market_capital = match prices[cur].eur_market_cap {
-                    Some(v) => v,
-                    None => 0.0,
-                };
-                println!("{0}",price);
-            }
-            else {
-                //println!("{0}-{1}",name, 0.0);
-            }
-
-            response_price.push(Currency
-                {
-                    base_currency: base_cur,
-                    price: price,
-                    name : name,
-                    change_last_24_hours: Some(change_24),
-                    market_capital: Some(market_capital)
-                });
+            base_currency: base_cur,
+            price,
+            name,
+            change_last_24_hours: Some(change_24),
+            market_capital: Some(market_capital)
+        });
             
             
-        } 
+    } 
 
     serde_json::to_string(
     &response_price).expect("Something wrong with the request")
