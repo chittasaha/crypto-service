@@ -12,7 +12,7 @@ pub mod models;
 
 
 #[post("/prices")]
-async fn get_price(ids: String) -> impl Responder {
+async fn get_price(ids: web::Json<String>) -> impl Responder {
     
     let vec_currency = ids.split(",").collect::<Vec<&str>>();    
         
@@ -57,8 +57,8 @@ async fn get_price(ids: String) -> impl Responder {
             base_currency: base_cur,
             price,
             name,
-            change_last_24_hours: Some(change_24),
-            market_capital: Some(market_capital)
+            change_last_24_hours: change_24,
+            market_capital: market_capital
         });
             
             

@@ -32,7 +32,7 @@ pub struct Currency
     pub name: String,
     pub price: f64,
     pub base_currency: String,
-    pub change_last_24_hours : Option<f64>,
-    pub market_capital: Option<f64>
+    pub change_last_24_hours : f64,
+    pub market_capital: f64
 }
 
