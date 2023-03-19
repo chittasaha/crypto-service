@@ -1,5 +1,8 @@
 use actix_web::{get, post, web, App, HttpServer, Responder};
-use coingecko_rs::{CoinGeckoClient, response::coins::MarketData};
+use coingecko_rs::{
+    params::{MarketsOrder, PriceChangePercentage},
+    CoinGeckoClient,
+};
 
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
@@ -69,110 +72,59 @@ async fn get_price(ids: web::Json<String>) -> impl Responder {
 }
 
 #[get("/tokens")]
-async fn get_tokens() -> String {
+async fn get_tokens() -> Result<String, Box<dyn std::error::Error>> {
     
     let client = CoinGeckoClient::default();
+
+    //let cats = client.categories_list().await?;
+
+    /*for cat in cats {
+        print!("Id: {:?}, Name: {:?}", cat.category_id, cat.name);
+    }*/
+    
+    let coins = client.coins_markets("eur", &[""], None,
+     MarketsOrder::MarketCapDesc, 500, 1, true,&[
+        PriceChangePercentage::OneHour,
+        PriceChangePercentage::TwentyFourHours,
+        PriceChangePercentage::SevenDays,
+        PriceChangePercentage::FourteenDays,
+        PriceChangePercentage::ThirtyDays,
+        PriceChangePercentage::OneYear,
+    ]).await?;
 
     
     let mut tokens:Vec<Token> = vec![]; 
     
-    let coint_list = client.coins_list(false)
-    .await.unwrap();
+  
 
-    for t in coint_list
+    for coin in coins
     {
-        
-        if t.id == "" 
-        {
-            continue;
-        }
-
-        
-        
-        let coin = match client.coin(&t.id, false,false,true,true,true,false).await
-        {
-            Ok(c) => c,
-            Err(_e) => continue,
-        };
-        
-        
-        
-        println!("{0}", coin.name);
+        //println!("{0}", coin.name);
         
         let id = coin.id;
         let name = coin.name;        
-        let mut market_cap = 0.0;
-        let mut total_supply:f64 = 0.0;
-        let mut max_supply:f64 = 0.0;
-        let mut circulating_supply:f64 = 0.0; 
-        let mut all_time_high = 0.0;
-        let mut all_time_low = 0.0;
-        let mut ath_date: String = String::from("");
-        let mut atl_date: String = String::from("");
-        let mut current_price = 0.0;
-        let mut ath_change_parcent= 0.0;
-        let mut atl_change_parcent= 0.0;
-
-        match coin.market_data{
-            Some(v) => {
-                current_price = match v.current_price.usd{
-                    Some(cp) => cp,
-                    _ => 0.0,
-                };
-                all_time_high = match v.ath.usd{
-                    Some(ath) => ath,
-                    _ => 0.0,
-                };
-                ath_date = match v.ath_date.usd{
-                    Some(athd) => athd,
-                    _ => String::from(""),
-                };
-                atl_date = match v.atl_date.usd{
-                    Some(atld) => atld,
-                    _ => String::from(""),
-                };
-                all_time_low = match v.atl.usd{
-                    Some(alt) => alt,
-                    _ => 0.0,
-                };
-                ath_change_parcent = match v.ath_change_percentage.usd{
-                    Some(athp) => athp,
-                    _ => 0.0,
-                };
-                atl_change_parcent = match v.atl_change_percentage.usd{
-                    Some(atlp) => atlp,
-                    _ => 0.0,
-                };
-                market_cap = match v.market_cap.usd{
-                    Some(mk) => mk,
-                    _ => 0.0,
-                };
-                total_supply = match v.total_supply {
-                    serde_json::value::Value::Number(ts) => ts.as_f64().unwrap(),
-                    _ => 0.0,
-                };
-                max_supply = match v.max_supply{
-                    serde_json::value::Value::Number(ms) => ms.as_f64().unwrap(),
-                    _ => 0.0,
-                };
-                circulating_supply =  match v.circulating_supply{
-                    
-                    serde_json::value::Value::Number(cs) => cs.as_f64().unwrap(),
-                    _ => 0.0,
-                };
-
-            },
-            None => {},
+        let market_cap = coin.market_cap.unwrap();
+        let total_supply:f64 = match coin.total_supply{
+            Some(v) => v,
+            None => 0.0
         };
-
-        if total_supply < 100.0
-        {
-            continue;
-        }
+        let max_supply:f64 = match coin.max_supply{
+            Some(v) => v,
+            None => 0.0
+        };
+        let cir_supply:f64 = coin.circulating_supply.unwrap(); 
+        let all_time_high = coin.ath.unwrap();
+        let all_time_low = coin.atl.unwrap();
+        let ath_date: String = coin.ath_date.unwrap();
+        let atl_date: String = coin.atl_date.unwrap();
+        let current_price = coin.current_price.unwrap();
+        let ath_change_parcent= coin.ath_change_percentage.unwrap();
+        let atl_change_parcent= coin.atl_change_percentage.unwrap();     
         
 
-        let devs_data = coin.developer_data.unwrap();
-        let total_devs = devs_data.pull_request_contributors.unwrap();
+        let image = coin.image;
+        //let total_devs = devs_data.pull_request_contributors.unwrap();
+        /* 
         let last4_weeks_commit = devs_data.commit_count4_weeks.unwrap();
 
         
@@ -183,29 +135,26 @@ async fn get_tokens() -> String {
 
         //println!("{:?}", coin.clone());
 
+        */
+
         let token = Token{
-            id : id,
-            name : name,
-            catagories : catagories,
-            description : description,
-            market_cap: market_cap,
-            market_rank : String::from(""),
-            all_time_high : all_time_high,
-            ath_date : ath_date,
-            all_time_low : all_time_low,
-            atl_date : atl_date,
-            ath_change_parcent : ath_change_parcent,
-            atl_change_parcent : atl_change_parcent,
-            current_price : current_price,
-            cir_supply : circulating_supply,
-            total_supply : total_supply,
-            max_supply : max_supply,
-            total_devs : total_devs,
-            last4_weeks_commit : last4_weeks_commit,
-            twitter_followers : twitter_follower,            
+            id,
+            name,                        
+            market_cap,            
+            all_time_high,
+            ath_date,
+            all_time_low,
+            atl_date,
+            ath_change_parcent,
+            atl_change_parcent,
+            current_price,
+            cir_supply,
+            total_supply,
+            max_supply,
+            icon_url : image                     
         };
 
-        println!("{:?}", &token);
+        //println!("{:?}", &token);
         
         
 
@@ -216,7 +165,7 @@ async fn get_tokens() -> String {
 
     }
     
-    serde_json::to_string(&tokens).expect("Something went wrong!")
+    Ok(serde_json::to_string(&tokens).unwrap())
 }
 
 #[actix_web::main] // or #[tokio::main]
