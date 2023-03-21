@@ -1,4 +1,4 @@
-POST   http://192.168.1.162:8080/prices
+POST   http://127.0.0.1:8080/prices
 Content-Type: application/json; charset=UTF-8
 
 "acala,cardano"
