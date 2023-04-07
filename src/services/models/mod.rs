@@ -5,9 +5,13 @@ use serde_json::Value;
 #[serde(rename_all = "camelCase")]
 pub struct Token
 {
+    #[serde(rename = "id")]
     pub id: String,
+    #[serde(rename = "symbol")]
     pub symbol: String,
+    #[serde(rename = "name")]
     pub name: String,
+    #[serde(rename = "image")]
     pub image: String,
     #[serde(rename = "current_price")]
     pub current_price: f64,
@@ -37,11 +41,13 @@ pub struct Token
     pub total_supply: Option<f64>,
     #[serde(rename = "max_supply")]
     pub max_supply: Option<f64>,
+    #[serde(rename = "ath")]
     pub ath: Option<f64>,
     #[serde(rename = "ath_change_percentage")]
     pub ath_change_percentage: Option<f64>,
     #[serde(rename = "ath_date")]
     pub ath_date: String,
+    #[serde(rename = "atl")]
     pub atl: Option<f64>,
     #[serde(rename = "atl_change_percentage")]
     pub atl_change_percentage: Option<f64>,
